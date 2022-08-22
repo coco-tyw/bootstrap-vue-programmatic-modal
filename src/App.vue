@@ -8,6 +8,19 @@
   </div>
 </template>
 
+<script lang="ts">
+import Vue from "vue";
+import {useModal} from "@/plugins/programmatic-modal";
+import TestModal from "@/components/modals/TestModal.vue"
+
+export default Vue.extend({
+  components: {},
+  created() {
+    useModal(TestModal)
+  }
+})
+</script>
+
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
