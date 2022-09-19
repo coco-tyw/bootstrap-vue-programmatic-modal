@@ -22,7 +22,7 @@ export default Vue.extend({
       close(e) {
         e.preventDefault()
         console.log('close')
-      }
+      },
     })
   }
 })

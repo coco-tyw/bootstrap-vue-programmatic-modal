@@ -43,19 +43,20 @@ export const useModal = <T>(
     },
     setup(props, ctx) {
       const listeners = modalListeners || {}
-      const instance = getCurrentInstance()
+      const instance = getCurrentInstance()!
 
       onMounted(() => {
+        const modal = instance.proxy.$children[0].$children[0]
         for (const [key, listener] of Object.entries(listeners)) {
-          const modal = instance!.proxy.$children[0].$children[0]
           if (listener) modal.$on(key, listener)
         }
-      })
-      onBeforeUnmount(() => {
-        for (const [key, listener] of Object.entries(listeners)) {
-          const modal = instance!.proxy.$children[0].$children[0]
-          if (listener) modal.$off(key, listener)
-        }
+
+        modal.$on('hidden', () => {
+          for (const [key, listener] of Object.entries(listeners)) {
+            if (listener) modal.$off(key, listener)
+          }
+          instance.proxy.$destroy()
+        })
       })
     }
   })
