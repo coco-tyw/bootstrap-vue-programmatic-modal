@@ -1,5 +1,5 @@
 <template>
-  <b-modal :title="title" visible>
+  <b-modal :title="title">
   </b-modal>
 </template>
 

@@ -1,4 +1,4 @@
-import Vue, {CreateElement, defineComponent, getCurrentInstance, h, onBeforeUnmount, onMounted, VNodeData} from 'vue'
+import Vue, {CreateElement, defineComponent, getCurrentInstance, onMounted, VNodeData} from 'vue'
 import {BModal, BvModalEvent} from 'bootstrap-vue'
 
 import 'bootstrap/dist/css/bootstrap.css'
@@ -27,18 +27,22 @@ export const useModal = <T>(
   props: GetProps<T>,
   modalListeners?: ModalListeners
 ) => {
-  const instance = getCurrentInstance()
-  if (!instance) {
-    return
+  const parentInstance = getCurrentInstance()
+  if (!parentInstance) {
+    throw new Error
   }
 
-  const parent = instance.proxy
+  const parent = parentInstance.proxy
   const el = document.createElement('div')
+  const modalId = String(Math.floor(Math.random() * 10000000000000000))
 
   const ModalWrapper = defineComponent({
     render(createElement: CreateElement) {
       return createElement(ModalComponent, {
         props,
+        attrs: {
+          id: modalId
+        }
       } as VNodeData)
     },
     setup(props, ctx) {
@@ -50,16 +54,21 @@ export const useModal = <T>(
         for (const [key, listener] of Object.entries(listeners)) {
           if (listener) modal.$on(key, listener)
         }
-
-        modal.$on('hidden', () => {
-          for (const [key, listener] of Object.entries(listeners)) {
-            if (listener) modal.$off(key, listener)
-          }
-          instance.proxy.$destroy()
-        })
       })
     }
   })
 
-  return new (Vue.extend(ModalWrapper))({parent, el})
+  const modalWrapper = new (Vue.extend(ModalWrapper))({parent, el})
+  const modal = modalWrapper.$children[0].$children[0]
+
+  return {
+    id: modalId,
+    vueInstance: modal,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    show: modal.show,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    hide: modal.hide
+  }
 }
