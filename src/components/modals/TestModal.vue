@@ -1,19 +1,19 @@
 <template>
   <b-modal :title="title" visible>
-
   </b-modal>
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import {defineComponent} from "vue";
 
-export default Vue.extend({
+
+export default defineComponent({
   props: {
     title: {
       type: String,
       required: true
     }
-  },
+  }
 })
 </script>
 

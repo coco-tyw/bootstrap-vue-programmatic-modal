@@ -1,39 +1,64 @@
-import Vue, {Component, getCurrentInstance, h} from 'vue'
-import { BModal } from 'bootstrap-vue'
+import Vue, {CreateElement, defineComponent, getCurrentInstance, h, onBeforeUnmount, onMounted, VNodeData} from 'vue'
+import {BModal, BvModalEvent} from 'bootstrap-vue'
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
-import {ComponentOptions, FunctionalComponentOptions} from "vue/types/options";
-import {DefineComponent} from "vue/types/v3-define-component";
 
 Vue.component('BModal', BModal)
 
+type GetProps<T> = T extends new () => {
+  $props: infer Props;
+} ? Props : never
 
-export const useModal = <T extends typeof Vue | DefineComponent>(ModalComponent: T) => {
+type ModalListeners = Partial<{
+  cancel: (e: BvModalEvent) => void
+  change: (isVisible: boolean) => void
+  close: (e: BvModalEvent) => void
+  hidden: (e: BvModalEvent) => void
+  hide: (e: BvModalEvent) => void
+  ok: (e: BvModalEvent) => void
+  show: (e: BvModalEvent) => void
+  shown: (e: BvModalEvent) => void
+}>
+
+
+export const useModal = <T>(
+  ModalComponent: T,
+  props: GetProps<T>,
+  modalListeners?: ModalListeners
+) => {
   const instance = getCurrentInstance()
   if (!instance) {
     return
   }
 
-  const ExtendedModalContent = Vue.extend({
-    extends: ModalComponent,
-    mounted() {
-      console.log(this.$el)
-      this.$el.addEventListener('hidden', () => console.log())
-    }
-  })
+  const parent = instance.proxy
+  const el = document.createElement('div')
 
-  const Modal = Vue.extend()
-  const modal = new Modal({
-    parent: instance.proxy.$root,
-    el: document.createElement('div'),
-    render() {
-      return h(ExtendedModalContent, {
-        props: {
-          title: 'this is programmatic!!'
-        },
+  const ModalWrapper = defineComponent({
+    render(createElement: CreateElement) {
+      return createElement(ModalComponent, {
+        props,
+      } as VNodeData)
+    },
+    setup(props, ctx) {
+      const listeners = modalListeners || {}
+      const instance = getCurrentInstance()
+
+      onMounted(() => {
+        for (const [key, listener] of Object.entries(listeners)) {
+          const modal = instance!.proxy.$children[0].$children[0]
+          if (listener) modal.$on(key, listener)
+        }
+      })
+      onBeforeUnmount(() => {
+        for (const [key, listener] of Object.entries(listeners)) {
+          const modal = instance!.proxy.$children[0].$children[0]
+          if (listener) modal.$off(key, listener)
+        }
       })
     }
   })
-  return modal
+
+  return new (Vue.extend(ModalWrapper))({parent, el})
 }

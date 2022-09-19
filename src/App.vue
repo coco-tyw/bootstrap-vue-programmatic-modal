@@ -16,7 +16,14 @@ import TestModal from "@/components/modals/TestModal.vue"
 export default Vue.extend({
   components: {},
   created() {
-    useModal(TestModal)
+    useModal(TestModal, {
+      title: 'this is programmatic!!'
+    }, {
+      close(e) {
+        e.preventDefault()
+        console.log('close')
+      }
+    })
   }
 })
 </script>
