@@ -32,13 +32,17 @@ export const useModal = <T>(
     throw new Error
   }
 
+  onBeforeUnmount(() => {
+    modalWrapper.$destroy()
+  })
+
   const parent = parentInstance.proxy
   const el = document.createElement('div')
   const modalId = String(Math.floor(Math.random() * 10000000000000000))
 
   const listeners = modalListeners || {}
 
-  const ModalWrapper = defineComponent({
+  const ModalWrapper = Vue.extend({
     render(createElement: CreateElement) {
       return createElement(ModalComponent, {
         props,
@@ -47,7 +51,7 @@ export const useModal = <T>(
         }
       } as VNodeData)
     },
-    setup(props, ctx) {
+    setup() {
       const instance = getCurrentInstance()!
 
       onMounted(() => {
@@ -56,8 +60,8 @@ export const useModal = <T>(
           if (listener) modal.$on(key, listener)
         }
       })
+
       onBeforeUnmount(() => {
-        console.log('onBeforeUnmount')
         const modal = instance.proxy.$children[0].$children[0]
         for (const [key, listener] of Object.entries(listeners)) {
           if (listener) modal.$off(key, listener)
