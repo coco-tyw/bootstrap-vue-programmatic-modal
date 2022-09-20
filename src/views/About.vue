@@ -25,9 +25,11 @@ export default defineComponent({
     const onClickShow = () => {
       modal.show()
       setTimeout(() => {
-        router.push('/').then(() => console.log(modal.vueInstance))
-
+        modal.hide()
       }, 1000)
+      setTimeout(() => {
+        router.push('/')
+      }, 2000)
     }
 
     return {
