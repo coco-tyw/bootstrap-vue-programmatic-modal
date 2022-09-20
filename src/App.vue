@@ -3,9 +3,6 @@
     <div id="nav">
       <router-link to="/">Home</router-link> |
       <router-link to="/about">About</router-link>
-      <button @click="onClickShow">
-        show
-      </button>
     </div>
     <router-view/>
   </div>
@@ -13,28 +10,10 @@
 
 <script lang="ts">
 import {defineComponent} from "vue";
-import {useModal} from "@/plugins/programmatic-modal";
-import TestModal from "@/components/modals/TestModal.vue"
 
 export default defineComponent({
-  setup(props, ctx) {
-    const modal = useModal(TestModal, {
-      title: 'this is programmatic!!'
-    }, {
-      close(e) {
-        console.log('close')
-        e.preventDefault()
-      },
-    })
-
-    const onClickShow = () => {
-      modal.show()
-      setTimeout(modal.hide, 1000)
-    }
-
-    return {
-      onClickShow,
-    }
+  setup() {
+    return
   }
 })
 </script>

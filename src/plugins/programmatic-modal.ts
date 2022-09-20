@@ -1,4 +1,4 @@
-import Vue, {CreateElement, defineComponent, getCurrentInstance, onMounted, VNodeData} from 'vue'
+import Vue, {CreateElement, defineComponent, getCurrentInstance, onBeforeUnmount, onMounted, VNodeData} from 'vue'
 import {BModal, BvModalEvent} from 'bootstrap-vue'
 
 import 'bootstrap/dist/css/bootstrap.css'
@@ -6,7 +6,7 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 
 Vue.component('BModal', BModal)
 
-type GetProps<T> = T extends new () => {
+export type GetProps<T> = T extends new () => {
   $props: infer Props;
 } ? Props : never
 
@@ -36,6 +36,8 @@ export const useModal = <T>(
   const el = document.createElement('div')
   const modalId = String(Math.floor(Math.random() * 10000000000000000))
 
+  const listeners = modalListeners || {}
+
   const ModalWrapper = defineComponent({
     render(createElement: CreateElement) {
       return createElement(ModalComponent, {
@@ -46,13 +48,19 @@ export const useModal = <T>(
       } as VNodeData)
     },
     setup(props, ctx) {
-      const listeners = modalListeners || {}
       const instance = getCurrentInstance()!
 
       onMounted(() => {
         const modal = instance.proxy.$children[0].$children[0]
         for (const [key, listener] of Object.entries(listeners)) {
           if (listener) modal.$on(key, listener)
+        }
+      })
+      onBeforeUnmount(() => {
+        console.log('onBeforeUnmount')
+        const modal = instance.proxy.$children[0].$children[0]
+        for (const [key, listener] of Object.entries(listeners)) {
+          if (listener) modal.$off(key, listener)
         }
       })
     }
